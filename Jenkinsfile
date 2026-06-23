@@ -1,37 +1,21 @@
 pipeline {
-  agent any
-  stages {
-    stage('Checkout') {
-      steps {
-        checkout scm
-      }
+    agent none
+    stages {
+        stage('Parallel Build & Test') {
+            parallel {
+                stage('Build on Agent1') {
+                    agent { label 'agent1' }
+                    steps {
+                        bat 'echo Agent1 빌드 수행 중'
+                    }
+                }
+                stage('Test on Agent2') {
+                    agent { label 'agent2' }
+                    steps {
+                        bat 'echo Agent2 테스트 수행 중'
+                    }
+                }
+            }
+        }
     }
-    stage('Install') {
-      steps {
-        bat 'npm install'
-      }
-    }
-    stage('Test') {
-      steps {
-        //bat 'npm test'
-        bat 'set CI=true && npm test -- --passWithNoTests'
-      }
-    }
-    stage('Start') {
-      when {
-        branch 'main'
-      }
-      steps{
-        bat 'npm start'
-      }
-    }
-  }
-  post{
-    success {
-      echo 'Pipeline 성공적으로 완료!'
-    }
-    failure {
-      echo 'Pipeline 실패!'
-    }
-  }
 }
